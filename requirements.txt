@@ -1,0 +1,2 @@
+requests==2.22.0
+flair==0.4.4
