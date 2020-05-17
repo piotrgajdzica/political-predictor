@@ -12,9 +12,8 @@ from flair.models import TextClassifier
 class SentimentTagger:
     def __init__(self):
 
-        classifier_path = os.path.join(*os.path.split(os.path.abspath(__file__))[:-1], os.path.join('cache', 'sentiment', 'best-model.pt'))
-        print(os.path.split(os.path.abspath(__file__)))
-        print(classifier_path)
+        classifier_path = os.path.join(
+            *os.path.split(os.path.abspath(__file__))[:-1], os.path.join('cache', 'sentiment', 'best-model.pt'))
         download_model_if_not_exists('sentiment', classifier_path)
         self.classifier: TextClassifier = TextClassifier.load(classifier_path)
 
@@ -28,7 +27,8 @@ class SentimentTagger:
 class PoliticalViewsTagger:
     def __init__(self):
 
-        classifier_path = os.path.join(*os.path.split(os.path.abspath(__file__))[:-1], os.path.join('cache', 'sentiment', 'best-model.pt'))
+        classifier_path = os.path.join(
+            *os.path.split(os.path.abspath(__file__))[:-1], os.path.join('cache', 'political_views', 'best-model.pt'))
         download_model_if_not_exists('political_views', classifier_path)
         self.classifier: TextClassifier = TextClassifier.load(classifier_path)
 
@@ -47,9 +47,9 @@ def download_model_if_not_exists(model_type, path):
         pass
 
     if model_type == 'sentiment':
-        url = 'https://github.com/piotrgajdzica/sentiment-analysis/releases/download/1.0/sentiment.zip'
+        url = 'https://github.com/piotrgajdzica/political-predictor/releases/download/1.0/sentiment.zip'
     elif model_type == 'political_views':
-        url = 'https://github.com/piotrgajdzica/sentiment-analysis/releases/download/1.0/political_views.zip'
+        url = 'https://github.com/piotrgajdzica/political-predictor/releases/download/1.0/political_views.zip'
     else:
         raise Exception('Wrong model type')
 
@@ -79,4 +79,23 @@ def download_model_if_not_exists(model_type, path):
 
 
 if __name__ == '__main__':
-    SentimentTagger().predict([''])
+    sentiment_tagger = SentimentTagger()
+    views_tagger = PoliticalViewsTagger()
+    sentence = 'Capitalism is great!'
+
+    print(sentence)
+    print(sentiment_tagger.predict([sentence]))
+    print(views_tagger.predict([sentence]))
+    print()
+
+    sentence = 'I love socialism'
+    print(sentence)
+    print(sentiment_tagger.predict([sentence]))
+    print(views_tagger.predict([sentence]))
+    print()
+
+    sentence = 'I hate Trump because he is a racist bigot. He is stupid and old'
+    print(sentence)
+    print(sentiment_tagger.predict([sentence]))
+    print(views_tagger.predict([sentence]))
+    print()
