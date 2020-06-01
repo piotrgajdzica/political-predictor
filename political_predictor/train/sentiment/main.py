@@ -1,0 +1,78 @@
+import os
+
+from flair.data import Corpus
+from flair.datasets import CSVClassificationCorpus
+from flair.embeddings import FlairEmbeddings, WordEmbeddings, DocumentPoolEmbeddings
+from flair.models import TextClassifier
+from flair.trainers import ModelTrainer
+
+if __name__ == '__main__':
+
+    # this is the folder in which train, test and dev files reside
+    data_directory = 'data'
+
+    experiment_name = 'test1'
+    tagger_output_directory = os.path.join(data_directory, 'tagger_%s' % experiment_name)
+    try:
+        os.makedirs(tagger_output_directory)
+    except FileExistsError:
+        pass
+
+    # column format indicating which columns hold the text and label(s)
+    column_name_map = {
+        15: "text",
+        5: "label_topic"
+    }
+
+    # load corpus containing training, test and dev data and if CSV has a header, you can skip it
+    corpus: Corpus = CSVClassificationCorpus(data_directory,
+                                             column_name_map,
+                                             delimiter=',',
+                                             )
+
+    print(corpus.obtain_statistics())
+
+    label_dictionary = corpus.make_label_dictionary()
+    print(label_dictionary.item2idx)
+
+    # specify word embeddings you want to use
+    word_embeddings = [
+        WordEmbeddings('glove'),
+        FlairEmbeddings('news-forward-fast'),
+        FlairEmbeddings('news-backward-fast')
+    ]
+
+    # specify document embeddings that are created from word embeddings
+    document_embeddings = DocumentPoolEmbeddings(
+        word_embeddings,
+        pooling='mean',
+        fine_tune_mode='nonlinear',
+    )
+
+    # choose classifier type
+    tagger: TextClassifier = TextClassifier(document_embeddings=document_embeddings,
+                                            label_dictionary=label_dictionary,
+                                            multi_label=False
+                                            )
+    # define model
+
+    checkpoint = os.path.join(tagger_output_directory, 'checkpoint.pt')
+    if os.path.isfile(checkpoint):
+        trainer = ModelTrainer.load_checkpoint(checkpoint, corpus)
+    else:
+        trainer = ModelTrainer(tagger, corpus)
+
+    # train model
+    trainer.train(
+        tagger_output_directory,
+        checkpoint=True,
+        learning_rate=0.7,
+        dropout=0.25,
+        mini_batch_size=64,  # decrease to prevent graphic card memory errors. Increase to improve learning speed
+        monitor_test=False,
+        monitor_train=False,
+        patience=2,  # after how many unsuccessful epochs should we start annealing the learning rate
+        anneal_factor=0.5,
+        embeddings_storage_mode='cpu',  # warning: if this leads to memory errors set to 'none'
+        max_epochs=20,
+    )
