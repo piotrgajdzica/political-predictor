@@ -81,7 +81,7 @@ def download_model_if_not_exists(model_type, path):
 if __name__ == '__main__':
     sentiment_tagger = SentimentTagger()
     views_tagger = PoliticalViewsTagger()
-    sentence = 'Capitalism is great!'
+    sentence = 'Capitalism is amazing'
 
     print(sentence)
     print(sentiment_tagger.predict([sentence]))
@@ -94,7 +94,7 @@ if __name__ == '__main__':
     print(views_tagger.predict([sentence]))
     print()
 
-    sentence = 'I hate Trump because he is a racist bigot. He is stupid and old'
+    sentence = 'I hate Trump because he is a racist. He is too dumb to be a president'
     print(sentence)
     print(sentiment_tagger.predict([sentence]))
     print(views_tagger.predict([sentence]))
